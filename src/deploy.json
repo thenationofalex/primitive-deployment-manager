@@ -1,18 +1,18 @@
 {
     "nodes": [
-        {"ip": "192.168.0.1"},
-        {"ip": "192.168.0.2"}
+        {"ip": "192.168.1.149", "username": "alexb"}
     ],
     "package": [
-        {"name": "nginx"},
-        {"name": "php"},
+        {"name": "apache2"},
+        {"name": "php5"},
+        {"name": "libapache2-mod-php5"}
     ],
     "codebase": [
-        {"dir": "deploy/codebase"}
+        {"name": "Hello World", "dir": "deploy/codebase/helloworld"}
     ],
     "config": [
-        {"name": "apache",    "template": "deploy/config/apache.conf"},
+        {"name": "apache",   "template": "deploy/config/apache.conf"},
         {"name": "php",      "template": "deploy/config/php.conf"},
-        {"name": "codebase", "template": "deploy/config/codebase.conf"},
+        {"name": "codebase", "template": "deploy/config/codebase.conf"}
     ]
 }

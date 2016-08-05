@@ -9,11 +9,15 @@
 - [Python 3.5](https://www.python.org)
 - [Dotenv](https://github.com/theskumar/python-dotenv)
 
+### Application Structure
+
+- **src**
+    - **primitive.py**
+
 ### Setup
 
 - Install Python Dependencies via PIP `pip3 install -r requirements.txt`
-- Set server password in `.env`
 
 ### Usage
 
-- Start PDM via the command line `python3 src/primitive.py`
+- Start via the command line `python3 src/primitive.py`
