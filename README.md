@@ -7,9 +7,13 @@
 ### Built Using
 
 - [Python 3.5](https://www.python.org)
+- [Dotenv](https://github.com/theskumar/python-dotenv)
 
 ### Setup
 
-Install Python Dependencies via PIP `pip3 install -r requirements.txt``
+- Install Python Dependencies via PIP `pip3 install -r requirements.txt`
+- Set server password in `.env`
 
 ### Usage
+
+- Start PDM via the command line `python3 src/primitive.py`

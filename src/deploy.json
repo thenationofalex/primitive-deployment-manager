@@ -1,19 +1,18 @@
 {
     "nodes": [
-        {"ip": "192.168.0.1", "password": "root"},
-        {"ip": "192.168.0.2", "password": "root"}
+        {"ip": "192.168.0.1"},
+        {"ip": "192.168.0.2"}
     ],
-    "packages": [
+    "package": [
         {"name": "nginx"},
         {"name": "php"},
     ],
-    "configs": [
-        {"name": "nginx"},
-        {"name": "php"}
-    ],
     "codebase": [
-        {"dir": "deploy/codebase", "config": [
-            "nginx", "php"
-        ]}
+        {"dir": "deploy/codebase"}
+    ],
+    "config": [
+        {"name": "apache",    "template": "deploy/config/apache.conf"},
+        {"name": "php",      "template": "deploy/config/php.conf"},
+        {"name": "codebase", "template": "deploy/config/codebase.conf"},
     ]
 }
