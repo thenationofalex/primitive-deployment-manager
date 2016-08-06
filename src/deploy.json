@@ -1,18 +1,43 @@
 {
     "nodes": [
-        {"ip": "192.168.1.149", "username": "alexb"}
+        {
+            "ip": "192.168.1.109",
+            "username": "alexb"
+        }
     ],
     "package": [
-        {"name": "apache2"},
-        {"name": "php5"},
-        {"name": "libapache2-mod-php5"}
+        {
+            "name": "apache2"
+        },
+        {
+            "name": "php5"
+        },
+        {
+            "name": "libapache2-mod-php5"
+        }
     ],
     "codebase": [
-        {"name": "Hello World", "dir": "deploy/codebase/helloworld"}
+        {
+            "name": "Hello World",
+            "dir": "deploy/codebase/helloworld",
+            "deploy_to": "/var/www/helloworld"
+        }
     ],
     "config": [
-        {"name": "apache",   "template": "deploy/config/apache.conf"},
-        {"name": "php",      "template": "deploy/config/php.conf"},
-        {"name": "codebase", "template": "deploy/config/codebase.conf"}
+        {
+            "name": "apache",
+            "template": "deploy/config/apache.conf",
+            "deploy_to": "/etc/apache2/"
+        },
+        {
+            "name": "php",
+            "template": "deploy/config/php.conf",
+            "deploy_to": ""
+        },
+        {
+            "name": "codebase",
+            "template": "deploy/config/codebase.conf",
+            "deploy_to": "/etc/apache/sites-available/"
+        }
     ]
 }

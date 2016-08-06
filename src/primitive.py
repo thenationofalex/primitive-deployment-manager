@@ -1,10 +1,18 @@
 #!/usr/bin/env python3
 '''Primitive Deployment Manager'''
 
+import os
 import json
-import subprocess
+import paramiko
+import sys
+# import subprocess
 
+from dotenv  import Dotenv
 from termcolor import colored
+
+DOTENV_PATH = os.path.dirname(os.path.realpath(__file__)) + '/../.env'
+DOTENV = Dotenv(DOTENV_PATH)
+os.environ.update(DOTENV)
 
 # Load deployment config,
 DEPLOYMENT_DATA = []
@@ -36,20 +44,32 @@ while True:
     else:
         print(colored('Y or N please', 'red'))
 
-# Start deployment
+# Start Paramiko Deployment
+cmd_to_execute = PACKAGES_TO_INSTALL
 for nodes in DEPLOYMENT_DATA['nodes']:
     print(colored('Connecting to: ' + nodes['ip'] + '\n', 'cyan'))
-    ssh = subprocess.Popen(['ssh', nodes['username'] + '@' + nodes['ip'], PACKAGES_TO_INSTALL],
-                           shell=False,
-                           stdout=subprocess.PIPE,
-                           stderr=subprocess.PIPE
-                          )
-    results = ssh.stdout.readlines()
-    if results == []:
-        error = ssh.stderr.readlines()
-        print(error)
-    else:
-        print(results)
+    SSH = paramiko.SSHClient()
+    SSH.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    SSH.connect(nodes['ip'], username=nodes['username'], password=os.environ.get('SERVER_PASSWORD'))
+    ssh_stdin, ssh_stdout, ssh_stderr = SSH.exec_command(cmd_to_execute)
+    outlines=ssh_stdout.readlines()
+    resp=''.join(outlines)
+    print(resp)
+
+# Start deployment
+# for nodes in DEPLOYMENT_DATA['nodes']:
+#     print(colored('Connecting to: ' + nodes['ip'] + '\n', 'cyan'))
+#     ssh = subprocess.Popen(['ssh', nodes['username'] + '@' + nodes['ip'], PACKAGES_TO_INSTALL],
+#                            shell=False,
+#                            stdout=subprocess.PIPE,
+#                            stderr=subprocess.PIPE
+#                           )
+#     results = ssh.stdout.readlines()
+#     if results == []:
+#         error = ssh.stderr.readlines()
+#         print(error)
+#     else:
+#         print(results)
         # Connect to node X
             #Install Apache
             #Install PHP
