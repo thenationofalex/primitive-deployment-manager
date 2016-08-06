@@ -19,24 +19,19 @@
     "codebase": [
         {
             "name": "Hello World",
-            "dir": "deploy/codebase/helloworld",
+            "dir": "/deploy/codebase/helloworld",
             "deploy_to": "/var/www/helloworld"
         }
     ],
     "config": [
         {
-            "name": "apache",
-            "template": "deploy/config/apache.conf",
-            "deploy_to": "/etc/apache2/"
+            "name": "php.ini",
+            "template": "/deploy/config/php.ini",
+            "deploy_to": "/etc/php5/apache2/"
         },
         {
-            "name": "php",
-            "template": "deploy/config/php.conf",
-            "deploy_to": ""
-        },
-        {
-            "name": "codebase",
-            "template": "deploy/config/codebase.conf",
+            "name": "helloworld.conf",
+            "template": "/deploy/config/helloworld.conf",
             "deploy_to": "/etc/apache/sites-available/"
         }
     ]
