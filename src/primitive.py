@@ -153,10 +153,12 @@ def main():
 
         #Run HTTP tests
         http_test = http.client.HTTPConnection(nodes['ip'])
-        http_test.request("HEAD", "/")
+        http_test.request("GET", "/")
         response = http_test.getresponse()
+        data_response = response.read()
         print(colored('HTTP Test', 'cyan'))
         print(response.status, response.reason)
+        print(data_response)
 
 if __name__ == '__main__':
     main()
