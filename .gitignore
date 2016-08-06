@@ -4,7 +4,6 @@
 *.swp
 *.out
 *__pycache__
-BUILD_SPEC.md
 gitlog.txt
 .env
 paramiko.log

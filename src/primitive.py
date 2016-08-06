@@ -65,8 +65,8 @@ def main():
                                                              get_pty=True)
         ssh_stdin.write(server_password + '\n')
         ssh_stdin.flush()
-        print(ssh_stderr.read())
-        print(ssh_stdout.read())
+        ssh_stderr.read()
+        ssh_stdout.read()
 
         # Start SFTP
         transport = paramiko.Transport((nodes['ip'], 22))
@@ -108,8 +108,8 @@ def main():
                                                              get_pty=True)
         ssh_stdin.write(server_password + '\n')
         ssh_stdin.flush()
-        print(ssh_stderr.read())
-        print(ssh_stdout.read())
+        ssh_stderr.read()
+        ssh_stdout.read()
 
         # Set ServerName in Apache conf
         for config in deployment_data['config']:
@@ -121,8 +121,8 @@ def main():
                                                              get_pty=True)
         ssh_stdin.write(server_password + '\n')
         ssh_stdin.flush()
-        print(ssh_stderr.read())
-        print(ssh_stdout.read())
+        ssh_stderr.read()
+        ssh_stdout.read()
 
         # Move codebase
         for code in deployment_data['codebase']:
@@ -134,20 +134,20 @@ def main():
                                                              get_pty=True)
         ssh_stdin.write(server_password + '\n')
         ssh_stdin.flush()
-        print(ssh_stderr.read())
-        print(ssh_stdout.read())
+        ssh_stderr.read()
+        ssh_stdout.read()
 
         # Clean up deployment directory, remove default apache site,
         # enable new site, restart apache services
         clean_up = 'sudo rm -rf /home/' + nodes['username'] + '/deploy && ' \
         'sudo -S rm -rf /var/www/html && sudo -S a2ensite ' + site_to_enable + \
-        ' && sudo -S service restart apache2'
+        ' && sudo -S service apache2 restart'
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(str(clean_up),
                                                              get_pty=True)
         ssh_stdin.write(server_password + '\n')
         ssh_stdin.flush()
-        print(ssh_stderr.read())
-        print(ssh_stdout.read())
+        ssh_stderr.read()
+        ssh_stdout.read()
 
         ssh.close()
 
@@ -159,6 +159,7 @@ def main():
         print(colored('HTTP Test', 'cyan'))
         print(response.status, response.reason)
         print(data_response)
+        print(colored('Node deployed', 'magenta'))
 
 if __name__ == '__main__':
     main()
