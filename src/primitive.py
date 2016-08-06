@@ -4,8 +4,6 @@
 import os
 import json
 import paramiko
-import sys
-# import subprocess
 
 from dotenv  import Dotenv
 from termcolor import colored
@@ -30,7 +28,7 @@ packages = []
 for package in DEPLOYMENT_DATA['package']:
     packages.append(package['name'])
 
-PACKAGES_TO_INSTALL = 'sudo apt-get install -y ' + ' '.join(packages)
+PACKAGES_TO_INSTALL = 'sudo -S apt-get install -y ' + ' '.join(packages)
 
 # Confirm codebase deployment to nodes.
 while True:
@@ -45,16 +43,25 @@ while True:
         print(colored('Y or N please', 'red'))
 
 # Start Paramiko Deployment
-cmd_to_execute = PACKAGES_TO_INSTALL
+cmd_to_execute = str(PACKAGES_TO_INSTALL)
 for nodes in DEPLOYMENT_DATA['nodes']:
-    print(colored('Connecting to: ' + nodes['ip'] + '\n', 'cyan'))
+    print(colored('Connecting to: ' + nodes['ip'], 'cyan'))
     SSH = paramiko.SSHClient()
     SSH.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     SSH.connect(nodes['ip'], username=nodes['username'], password=os.environ.get('SERVER_PASSWORD'))
-    ssh_stdin, ssh_stdout, ssh_stderr = SSH.exec_command(cmd_to_execute)
-    outlines=ssh_stdout.readlines()
-    resp=''.join(outlines)
-    print(resp)
+    print('Installing packages ' + str(packages))
+    ssh_stdin, ssh_stdout, ssh_stderr = SSH.exec_command(cmd_to_execute, get_pty=True)
+    ssh_stdin.write(os.environ.get('SERVER_PASSWORD') + '\n')
+    ssh_stdin.flush()
+    print(ssh_stdout.read())
+    SSH.close()
+
+    # outlines = ssh_stdout.readlines()
+    # errlines = ssh_stderr.readlines()
+    # resp=''.join(outlines)
+    # resp=''.join(errlines)
+    # print(resp)
+    # SSH.close()
 
 # Start deployment
 # for nodes in DEPLOYMENT_DATA['nodes']:
