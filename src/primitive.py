@@ -21,7 +21,7 @@ def main():
     with open('src/deploy.json') as deployment_config:
         deployment_data = json.load(deployment_config)
 
-    print(colored('\n📡 🛰  Primitive Deployment Manager v0.0.1\n', 'magenta'))
+    print(colored('📡 🛰  Primitive Deployment Manager v0.0.1\n', 'magenta'))
     print(colored('Deploy \'' + deployment_data['codebase'][0]['name'] + '\' to:\n', 'cyan'))
 
     project_name = deployment_data['nodes'][0]['project_name']
@@ -49,25 +49,10 @@ def main():
             print(colored('Y or N please', 'red'))
 
     # Start Paramiko Deployment
-    cmd_to_execute = str(packages_to_install)
     for nodes in deployment_data['nodes']:
         print(colored('Connecting to: ' + nodes['ip'], 'cyan'))
-        ssh = paramiko.SSHClient()
-        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.connect(nodes['ip'], username=nodes['username'],
-                    password=server_password, timeout=4)
 
-        # Install Packages
-        print(colored('Installing packages: ' + str(packages), 'cyan'))
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(cmd_to_execute,
-                                                             get_pty=True)
-        ssh_stdin.write(server_password + '\n')
-        ssh_stdin.flush()
-        print(ssh_stderr.read())
-        print(ssh_stdout.read())
-        ssh.close()
-
-        # Copy config and codebase over to remote deployment directory
+        # Start SFTP
         transport = paramiko.Transport((nodes['ip'], 22))
         transport.connect(username=nodes['username'], password=server_password)
 
@@ -96,9 +81,61 @@ def main():
         sftp.close()
         transport.close()
 
-        # Remove index.html
+        # Start SSH
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(nodes['ip'], username=nodes['username'],
+                    password=server_password, timeout=4)
 
-        # Restart services
+        # Install Packages
+        print(colored('Installing packages: ' + str(packages), 'cyan'))
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(str(packages_to_install),
+                                                             get_pty=True)
+        ssh_stdin.write(server_password + '\n')
+        ssh_stdin.flush()
+        print(ssh_stderr.read())
+        print(ssh_stdout.read())
+
+        # Move config files.
+        for config in deployment_data['config']:
+            configs_to_move = 'sudo -S cp -r /home/' + nodes['username'] + \
+            config['template'] + ' ' + config['deploy_to']
+            if config['service'] == 'webserver':
+                site_to_enable = config['name']
+
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(str(configs_to_move),
+                                                             get_pty=True)
+        ssh_stdin.write(server_password + '\n')
+        ssh_stdin.flush()
+        print(ssh_stderr.read())
+        print(ssh_stdout.read())
+
+        # Move codebase
+        for code in deployment_data['codebase']:
+            code_to_move = 'sudo -S mkdir -p ' + code['deploy_to'] + \
+            ' && sudo -S cp -r /home/' + nodes['username'] + '/' + code['dir'] + \
+            '/* ' + code['deploy_to']
+
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(str(code_to_move),
+                                                             get_pty=True)
+        ssh_stdin.write(server_password + '\n')
+        ssh_stdin.flush()
+        print(ssh_stderr.read())
+        print(ssh_stdout.read())
+
+        # Clean up deployment directory, remove default apache site,
+        # enable new site, restart apache services
+        clean_up = 'sudo rm -rf /home/' + nodes['username'] + '/deploy && ' \
+        'sudo -S rm -rf /var/www/html && sudo -S a2ensite ' + site_to_enable + \
+        ' && sudo -S service restart apache2'
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(str(clean_up),
+                                                             get_pty=True)
+        ssh_stdin.write(server_password + '\n')
+        ssh_stdin.flush()
+        print(ssh_stderr.read())
+        print(ssh_stdout.read())
+
+        ssh.close()
 
         # Run CURL tests
 

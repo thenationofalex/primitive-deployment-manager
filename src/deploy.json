@@ -21,19 +21,21 @@
         {
             "name": "Hello World",
             "dir": "/deploy/codebase/helloworld",
-            "deploy_to": "/var/www/helloworld"
+            "deploy_to": "/var/www/helloworld/"
         }
     ],
     "config": [
         {
             "name": "php.ini",
             "template": "/deploy/config/php.ini",
-            "deploy_to": "/etc/php5/apache2/"
+            "deploy_to": "/etc/php5/apache2/",
+            "service": "php"
         },
         {
             "name": "helloworld.conf",
             "template": "/deploy/config/helloworld.conf",
-            "deploy_to": "/etc/apache/sites-available/"
+            "deploy_to": "/etc/apache2/sites-available/",
+            "service": "webserver"
         }
     ]
 }

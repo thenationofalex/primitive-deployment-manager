@@ -1,7 +1,7 @@
 ## 📡 🛰  (P.D.M) Primitive Deployment Manager
 
 ![Author Alex Best](https://img.shields.io/badge/Author-Alex%20Best-red.svg?style=flat-square)
-![Version 0.0.1.alpha](https://img.shields.io/badge/Version-0.0.1.alpha-orange.svg?style=flat-square)
+![Version 0.0.1](https://img.shields.io/badge/Version-0.0.1-orange.svg?style=flat-square)
 ![Python 3.5](https://img.shields.io/badge/Python%20-3.5-3776ab.svg?style=flat-square)
 
 Primitive Deployment Manager is designed to quickly provision application servers.
@@ -10,6 +10,7 @@ Primitive Deployment Manager is designed to quickly provision application server
 
 - [Python 3.5](https://www.python.org)
 - [Dotenv](https://github.com/theskumar/python-dotenv)
+- [Paramiko](https://github.com/paramiko/paramiko)
 
 ### Application Structure
 
@@ -39,7 +40,8 @@ Example config:
     "nodes": [
         {
             "ip": "192.168.1.149",
-            "username": "alexb"
+            "username": "alexb",
+            "project_name": "helloworld"
         }
     ],
     "package": [
@@ -56,14 +58,16 @@ Example config:
     ],
     "config": [
         {
-            "name": "apache",
-            "template": "deploy/config/apache.conf",
-            "deploy_to": "/etc/apache2/"
+            "name": "php.ini",
+            "template": "/deploy/config/php.ini",
+            "deploy_to": "/etc/php5/apache2/",
+            "service": "php"
         },
         {
-            "name": "php",
-            "template": "deploy/config/php.conf",
-            "deploy_to": ""
+            "name": "helloworld.conf",
+            "template": "/deploy/config/helloworld.conf",
+            "deploy_to": "/etc/apache2/sites-available/",
+            "service": "apache2"
         }
     ]
 }
