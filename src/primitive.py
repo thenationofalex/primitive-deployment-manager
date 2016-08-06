@@ -111,6 +111,19 @@ def main():
         print(ssh_stderr.read())
         print(ssh_stdout.read())
 
+        # Set ServerName in Apache conf
+        for config in deployment_data['config']:
+            if config['service'] == 'webserver':
+                update_server_name = 'sudo -S sed -i \'/.*ServerName.*/c\ServerName ' + \
+                nodes['ip'] + '\' /etc/apache2/sites-available/helloworld.conf'
+
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(str(update_server_name),
+                                                             get_pty=True)
+        ssh_stdin.write(server_password + '\n')
+        ssh_stdin.flush()
+        print(ssh_stderr.read())
+        print(ssh_stdout.read())
+
         # Move codebase
         for code in deployment_data['codebase']:
             code_to_move = 'sudo -S mkdir -p ' + code['deploy_to'] + \
@@ -139,11 +152,11 @@ def main():
         ssh.close()
 
         #Run HTTP tests
-        # http_test = http.client.HTTPConnection(nodes['ip'])
-        # http_test.request("HEAD", "/")
-        # response = http_test.getresponse()
-        # print(colored('HTTP Test', 'cyan'))
-        # print(response.status, response.reason)
+        http_test = http.client.HTTPConnection(nodes['ip'])
+        http_test.request("HEAD", "/")
+        response = http_test.getresponse()
+        print(colored('HTTP Test', 'cyan'))
+        print(response.status, response.reason)
 
 if __name__ == '__main__':
     main()
