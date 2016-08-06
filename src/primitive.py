@@ -3,6 +3,7 @@
 
 import os
 import json
+import http.client
 import paramiko
 
 from dotenv  import Dotenv
@@ -52,6 +53,21 @@ def main():
     for nodes in deployment_data['nodes']:
         print(colored('Connecting to: ' + nodes['ip'], 'cyan'))
 
+        # Start SSH
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(nodes['ip'], username=nodes['username'],
+                    password=server_password, timeout=4)
+
+        # Install Packages
+        print(colored('Installing packages: ' + str(packages), 'cyan'))
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(str(packages_to_install),
+                                                             get_pty=True)
+        ssh_stdin.write(server_password + '\n')
+        ssh_stdin.flush()
+        print(ssh_stderr.read())
+        print(ssh_stdout.read())
+
         # Start SFTP
         transport = paramiko.Transport((nodes['ip'], 22))
         transport.connect(username=nodes['username'], password=server_password)
@@ -80,21 +96,6 @@ def main():
 
         sftp.close()
         transport.close()
-
-        # Start SSH
-        ssh = paramiko.SSHClient()
-        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.connect(nodes['ip'], username=nodes['username'],
-                    password=server_password, timeout=4)
-
-        # Install Packages
-        print(colored('Installing packages: ' + str(packages), 'cyan'))
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(str(packages_to_install),
-                                                             get_pty=True)
-        ssh_stdin.write(server_password + '\n')
-        ssh_stdin.flush()
-        print(ssh_stderr.read())
-        print(ssh_stdout.read())
 
         # Move config files.
         for config in deployment_data['config']:
@@ -137,7 +138,12 @@ def main():
 
         ssh.close()
 
-        # Run CURL tests
+        #Run HTTP tests
+        # http_test = http.client.HTTPConnection(nodes['ip'])
+        # http_test.request("HEAD", "/")
+        # response = http_test.getresponse()
+        # print(colored('HTTP Test', 'cyan'))
+        # print(response.status, response.reason)
 
 if __name__ == '__main__':
     main()
