@@ -22,7 +22,9 @@ def main():
         deployment_data = json.load(deployment_config)
 
     print(colored('\n📡 🛰  Primitive Deployment Manager v0.0.1\n', 'magenta'))
-    print(colored('Deploy \'' + deployment_data['codebase'][0]['name'] + '\' to: (Y/N)\n', 'cyan'))
+    print(colored('Deploy \'' + deployment_data['codebase'][0]['name'] + '\' to:\n', 'cyan'))
+
+    project_name = deployment_data['nodes'][0]['project_name']
 
     for nodes in deployment_data['nodes']:
         print('- ' + nodes['ip'])
@@ -32,12 +34,12 @@ def main():
     for package in deployment_data['package']:
         packages.append(package['name'])
 
-    packages_to_install = 'mkdir -p deploy/codebase && mkdir deploy/config \
-    && sudo -S apt-get install -y ' + ' '.join(packages)
+    packages_to_install = 'mkdir -p deploy/codebase/' + project_name + \
+    ' && mkdir deploy/config && sudo -S apt-get install -y ' + ' '.join(packages)
 
     # Confirm codebase deployment to nodes.
     while True:
-        confirm_deployment = input('\n').lower()
+        confirm_deployment = input(colored('\nY or N: ', 'cyan')).lower()
         if confirm_deployment == 'n':
             print('Goodbye')
             raise SystemExit
@@ -56,7 +58,7 @@ def main():
                     password=server_password, timeout=4)
 
         # Install Packages
-        print('Installing packages ' + str(packages))
+        print(colored('Installing packages: ' + str(packages), 'cyan'))
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(cmd_to_execute,
                                                              get_pty=True)
         ssh_stdin.write(server_password + '\n')
@@ -65,25 +67,34 @@ def main():
         print(ssh_stdout.read())
         ssh.close()
 
-        # Copy configs over to remote deployment directory
+        # Copy config and codebase over to remote deployment directory
         transport = paramiko.Transport((nodes['ip'], 22))
         transport.connect(username=nodes['username'], password=server_password)
 
         sftp = paramiko.SFTPClient.from_transport(transport)
 
-        print('Copying configs')
+        # Deploy configs
+        print(colored('Copying configs:', 'cyan'))
         for config in deployment_data['config']:
             local_file = os.path.dirname(os.path.realpath(__file__)) + config['template']
-            remote_file = '/home/' +  nodes['username'] + config['template']
+            remote_file = '/home/' + nodes['username'] + config['template']
+            print(local_file)
             sftp.put(local_file, remote_file)
 
         # Deploy code base
-        print('Copying codebase')
+        print(colored('Copying codebase:', 'cyan'))
         for code in deployment_data['codebase']:
             local_folder = os.path.dirname(os.path.realpath(__file__)) + code['dir']
             remote_folder = '/home/' +  nodes['username'] + code['dir']
-            sftp.put(local_folder, remote_folder)
+            for filename in os.listdir(local_folder):
+                to_transfer = os.path.dirname(os.path.realpath(__file__)) + \
+                code['dir'] + '/' + filename
+                remote_transfer = remote_folder + '/' + filename
+                print(to_transfer)
+                sftp.put(to_transfer, remote_transfer)
+
         sftp.close()
+        transport.close()
 
         # Remove index.html
 

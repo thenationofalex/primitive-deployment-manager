@@ -2,7 +2,8 @@
     "nodes": [
         {
             "ip": "192.168.1.109",
-            "username": "alexb"
+            "username": "alexb",
+            "project_name": "helloworld"
         }
     ],
     "package": [
