@@ -23,15 +23,19 @@ Primitive Deployment Manager is designed to quickly provision application server
         - **codebase**
             -**helloworld** Project to deploy
 
+### Server support
+
+- Tested on Ubuntu 14.04 LTS
+
 ### Setup
 
 - Install Python Dependencies via PIP `pip3 install -r requirements.txt`
 - Rename `.env-sample` to `.env` and set server password.
 - Define project configuration in `src/deploy.json`
-    - **Nodes** List of nodes ***IP*** and ***USERNAME*** to that P.D.M will use deploy the application.
+    - **Nodes** List of nodes ***IP***, ***USERNAME*** and ***PROJECT_NAME*** that P.D.M will use to deploy the application.
     - **Package** List of packages to install. (Currently only packages that can be install via APT)
     - **Codebase** Name and path to the application to deploy.
-    - **Config** ...
+    - **Config** Server config files to deploy.
 
 Example config:
 

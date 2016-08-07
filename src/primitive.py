@@ -14,7 +14,7 @@ DOTENV_PATH = os.path.dirname(os.path.realpath(__file__)) + '/../.env'
 DOTENV = Dotenv(DOTENV_PATH)
 os.environ.update(DOTENV)
 
-    # Prepare package list
+# Prepare package list
 def prepare_packages(deployment_data, project_name):
     '''Create list of APT packages to install'''
     packages = []
@@ -33,19 +33,19 @@ def install_packages(ssh, packages_to_install, password):
     ssh_stderr.read()
     ssh_stdout.read()
 
-def deploy_config(sftp, deployment_data, username):
+def deploy_config(sftp, deployment_data):
     '''SFTP Config files'''
     for config in deployment_data['config']:
         local_file = os.path.dirname(os.path.realpath(__file__)) + config['template']
-        remote_file = '/home/' + username + config['template']
+        remote_file = '/home' + config['template']
         print(local_file)
         sftp.put(local_file, remote_file)
 
-def deploy_code_base(sftp, deployment_data, username):
+def deploy_code_base(sftp, deployment_data):
     '''SFTP Codebase'''
     for code in deployment_data['codebase']:
         local_folder = os.path.dirname(os.path.realpath(__file__)) + code['dir']
-        remote_folder = '/home/' +  username + code['dir']
+        remote_folder = '/home' + code['dir']
         for filename in os.listdir(local_folder):
             to_transfer = os.path.dirname(os.path.realpath(__file__)) + \
             code['dir'] + '/' + filename
@@ -53,10 +53,10 @@ def deploy_code_base(sftp, deployment_data, username):
             print(to_transfer)
             sftp.put(to_transfer, remote_transfer)
 
-def move_config_files(ssh, deployment_data, username, password):
+def move_config_files(ssh, deployment_data, password):
     '''Move config files and return site name'''
     for config in deployment_data['config']:
-        configs_to_move = 'sudo -S cp -r /home/' + username + \
+        configs_to_move = 'sudo -S cp -r /home' + \
         config['template'] + ' ' + config['deploy_to']
 
     ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(str(configs_to_move),
@@ -71,7 +71,7 @@ def set_servername(ssh, deployment_data, ip_address, password):
     for config in deployment_data['config']:
         if config['service'] == 'webserver':
             update_server_name = 'sudo -S sed -i \'/.*ServerName.*/c\\ServerName ' + \
-            ip_address + '\' /etc/apache2/sites-available/helloworld.conf'
+            ip_address + '\' /etc/apache2/sites-available/' + config['name']
 
     ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(str(update_server_name),
                                                          get_pty=True)
@@ -80,11 +80,11 @@ def set_servername(ssh, deployment_data, ip_address, password):
     ssh_stderr.read()
     ssh_stdout.read()
 
-def move_code_base(ssh, deployment_data, username, password):
+def move_code_base(ssh, deployment_data, password):
     '''Move Codebase'''
     for code in deployment_data['codebase']:
         code_to_move = 'sudo -S mkdir -p ' + code['deploy_to'] + \
-        ' && sudo -S cp -r /home/' + username + '/' + code['dir'] + \
+        ' && sudo -S cp -r /home' + code['dir'] + \
         '/* ' + code['deploy_to']
 
     ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(str(code_to_move),
@@ -94,10 +94,10 @@ def move_code_base(ssh, deployment_data, username, password):
     ssh_stderr.read()
     ssh_stdout.read()
 
-def clean_up_deployment(ssh, username, site, password):
+def clean_up_deployment(ssh, site, password):
     '''Clean up deployment directory, remove default apache site,
     enable new site, restart apache services'''
-    clean_up = 'sudo rm -rf /home/' + username + '/deploy && ' \
+    clean_up = 'sudo rm -rf /home/deploy && ' \
     'sudo -S rm -rf /var/www/html && sudo -S a2ensite ' + site + \
     ' && sudo -S service apache2 restart'
     ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(str(clean_up),
@@ -167,30 +167,30 @@ def main():
 
         # Deploy configs
         print(colored('Copying configs:', 'cyan'))
-        deploy_config(sftp, deployment_data, nodes['username'])
+        deploy_config(sftp, deployment_data)
 
         # Deploy code base
         print(colored('Copying codebase:', 'cyan'))
-        deploy_code_base(sftp, deployment_data, nodes['username'])
+        deploy_code_base(sftp, deployment_data)
 
         sftp.close()
         transport.close()
 
         # Move config files.
-        move_config_files(ssh, deployment_data, nodes['username'], server_password)
+        move_config_files(ssh, deployment_data, server_password)
 
         # Set ServerName in Apache conf
         set_servername(ssh, deployment_data, nodes['ip'], server_password)
 
         # Move codebase
-        move_code_base(ssh, deployment_data, nodes['username'], server_password)
+        move_code_base(ssh, deployment_data, server_password)
 
         # Clean up deployment directory, remove default apache site,
         # enable new site, restart apache services
         for config in deployment_data['config']:
             if config['service'] == 'webserver':
                 site_to_enable = config['name']
-        clean_up_deployment(ssh, nodes['username'], site_to_enable, server_password)
+        clean_up_deployment(ssh, site_to_enable, server_password)
 
         ssh.close()
 

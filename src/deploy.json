@@ -1,8 +1,13 @@
 {
     "nodes": [
         {
-            "ip": "192.168.1.106",
-            "username": "alexb",
+            "ip": "54.210.62.211",
+            "username": "root",
+            "project_name": "helloworld"
+        },
+        {
+            "ip": "54.209.148.249",
+            "username": "root",
             "project_name": "helloworld"
         }
     ],
