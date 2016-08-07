@@ -20,8 +20,9 @@ def prepare_packages(deployment_data, project_name):
     packages = []
     for package in deployment_data['package']:
         packages.append(package['name'])
-    packages_to_install = 'mkdir -p deploy/codebase/' + project_name + \
-    ' && mkdir deploy/config && sudo -S apt-get install -y ' + ' '.join(packages)
+    packages_to_install = 'mkdir -p /tmp/deploy/codebase/' + project_name + \
+    ' && mkdir /tmp/deploy/config && sudo -S chmod 775 -R /tmp/deploy' + \
+    ' && sudo -S apt-get install -y ' + ' '.join(packages)
     return packages_to_install
 
 def install_packages(ssh, packages_to_install, password):
@@ -37,15 +38,15 @@ def deploy_config(sftp, deployment_data):
     '''SFTP Config files'''
     for config in deployment_data['config']:
         local_file = os.path.dirname(os.path.realpath(__file__)) + config['template']
-        remote_file = '/home' + config['template']
-        print(local_file)
+        remote_file = '/tmp' + config['template']
+        print(local_file + ' -> ' + remote_file)
         sftp.put(local_file, remote_file)
 
 def deploy_code_base(sftp, deployment_data):
     '''SFTP Codebase'''
     for code in deployment_data['codebase']:
         local_folder = os.path.dirname(os.path.realpath(__file__)) + code['dir']
-        remote_folder = '/home' + code['dir']
+        remote_folder = '/tmp' + code['dir']
         for filename in os.listdir(local_folder):
             to_transfer = os.path.dirname(os.path.realpath(__file__)) + \
             code['dir'] + '/' + filename
@@ -56,7 +57,7 @@ def deploy_code_base(sftp, deployment_data):
 def move_config_files(ssh, deployment_data, password):
     '''Move config files and return site name'''
     for config in deployment_data['config']:
-        configs_to_move = 'sudo -S cp -r /home' + \
+        configs_to_move = 'sudo -S cp -r /tmp' + \
         config['template'] + ' ' + config['deploy_to']
 
     ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(str(configs_to_move),
@@ -84,7 +85,7 @@ def move_code_base(ssh, deployment_data, password):
     '''Move Codebase'''
     for code in deployment_data['codebase']:
         code_to_move = 'sudo -S mkdir -p ' + code['deploy_to'] + \
-        ' && sudo -S cp -r /home' + code['dir'] + \
+        ' && sudo -S cp -r /tmp' + code['dir'] + \
         '/* ' + code['deploy_to']
 
     ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(str(code_to_move),
@@ -97,7 +98,7 @@ def move_code_base(ssh, deployment_data, password):
 def clean_up_deployment(ssh, site, password):
     '''Clean up deployment directory, remove default apache site,
     enable new site, restart apache services'''
-    clean_up = 'sudo rm -rf /home/deploy && ' \
+    clean_up = 'sudo rm -rf /tmp/deploy && ' \
     'sudo -S rm -rf /var/www/html && sudo -S a2ensite ' + site + \
     ' && sudo -S service apache2 restart'
     ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(str(clean_up),
