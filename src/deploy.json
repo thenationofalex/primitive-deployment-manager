@@ -1,12 +1,7 @@
 {
     "nodes": [
         {
-            "ip": "54.210.62.211",
-            "username": "root",
-            "project_name": "helloworld"
-        },
-        {
-            "ip": "54.209.148.249",
+            "ip": "54.197.4.164",
             "username": "root",
             "project_name": "helloworld"
         }
